@@ -37,7 +37,7 @@ $container2 = Container::container();
 var_dump($container1 === $container2); // true
 ```
 
-### Resolving
+### Get
 
 The **Container** automatically resolves class instances using PHP's reflection capabilities. It inspects the class constructor to determine required dependencies and resolves them automatically.
 
@@ -54,6 +54,32 @@ $foo = $container->get(Foo::class);
 
 var_dump($foo instanceof Foo); // true
 ```
+
+### Resolve
+
+The **Container** class provides the `resolve` method, which allows you to pass specific values directly to a class's constructor when resolving dependencies. This is useful when you want to override or inject certain parameters that are not automatically resolvable by the container.
+
+```php
+use Xtompie\Container\Container;
+
+class Bar
+{
+    public function __construct(
+        public Foo $foo,
+        public ?string $qux = null
+    ) {
+    }
+}
+
+$container = new Container();
+$values = ['qux' => 'quxx'];
+$bar = $container->resolve(Bar::class, $values);
+
+var_dump($bar instanceof Bar); // true
+var_dump($bar->qux); // 'quxx'
+```
+
+In this example, the `resolve()` method manually provides the value `'quxx'` for the `qux` parameter, while the container automatically resolves the `Foo` dependency.
 
 ### Dependencies
 

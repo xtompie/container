@@ -165,4 +165,16 @@ class ContainerTest extends TestCase
         $this->assertNotSame($instance1, $instance2);
     }
 
+    public function testResolveWithValues()
+    {
+        // given
+        $container = new Container();
+        $values = ['qux' => 'quxx'];
+
+        // when
+        $result = $container->resolve(Bar::class, $values);
+
+        // then
+        $this->assertEquals('quxx', $result->qux);
+    }
 }

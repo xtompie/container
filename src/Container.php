@@ -84,7 +84,12 @@ class Container
 
     public function __invoke(string $abstract): object
     {
-        return $this->get($abstract);
+        return $this->resolve($abstract, []);
+    }
+
+    public function get(string $abstract): object
+    {
+        return $this->resolve($abstract, []);
     }
 
     public function concrete(string $abstract): string
@@ -92,7 +97,7 @@ class Container
         return isset($this->bindings[$abstract]) ? $this->concrete($this->bindings[$abstract]) : $abstract;
     }
 
-    public function get(string $abstract): mixed
+    public function resolve(string $abstract, array $values): mixed
     {
         $concrete = $this->concrete($abstract);
 
@@ -104,7 +109,7 @@ class Container
         $service = $this->resolveUsingProviders($abstract);
 
         if (!$service) {
-            $service = $this->resolveUsingReflections($concrete);
+            $service = $this->resolveUsingReflections($concrete, $values);
         }
 
         $this->resolveTransient($concrete, $service);
@@ -126,14 +131,17 @@ class Container
         return null;
     }
 
-    protected function resolveUsingReflections(string $concrete): object
+    protected function resolveUsingReflections(string $concrete, array $values): object
     {
         $class = new ReflectionClass($concrete);
         $args = [];
         $constructor = $class->getConstructor();
         if ($constructor) {
             foreach ($constructor->getParameters() as $arg) {
-                if ($arg->isDefaultValueAvailable()) {
+                if (isset($values[$arg->getName()])) {
+                    $args[] = $values[$arg->getName()];
+                }
+                else if ($arg->isDefaultValueAvailable()) {
                     $args[] = $arg->getDefaultValue();
                 }
                 else {
