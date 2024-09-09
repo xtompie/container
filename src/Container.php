@@ -84,12 +84,12 @@ class Container
 
     public function __invoke(string $abstract): object
     {
-        return $this->resolve($abstract, []);
+        return $this->solve($abstract, null);
     }
 
     public function get(string $abstract): object
     {
-        return $this->resolve($abstract, []);
+        return $this->solve($abstract, null);
     }
 
     public function concrete(string $abstract): string
@@ -99,30 +99,35 @@ class Container
 
     public function resolve(string $abstract, array $values): mixed
     {
+        return $this->solve($abstract, $values);
+    }
+
+    protected function solve(string $abstract, ?array $values): mixed
+    {
         $concrete = $this->concrete($abstract);
 
-        $service = $this->resolveUsingInstances($concrete);
+        $service = $this->solveInstance($concrete);
         if ($service) {
             return $service;
         }
 
-        $service = $this->resolveUsingProviders($abstract);
+        $service = $this->solveProvider($abstract);
 
         if (!$service) {
-            $service = $this->resolveUsingReflections($concrete, $values);
+            $service = $this->solveReflection($concrete, $values);
         }
 
-        $this->resolveTransient($concrete, $service);
+        $this->solveTransient($concrete, $service, $values);
 
         return $service;
     }
 
-    protected function resolveUsingInstances(string $concrete): ?object
+    protected function solveInstance(string $concrete): ?object
     {
         return $this->instances[$concrete] ?? null;
     }
 
-    protected function resolveUsingProviders(string $abstract): ?object
+    protected function solveProvider(string $abstract): ?object
     {
         $provider = $this->providers[$abstract] ?? null;
         if ($provider && is_subclass_of($provider, Provider::class)) {
@@ -131,14 +136,14 @@ class Container
         return null;
     }
 
-    protected function resolveUsingReflections(string $concrete, array $values): object
+    protected function solveReflection(string $concrete, ?array $values): object
     {
         $class = new ReflectionClass($concrete);
         $args = [];
         $constructor = $class->getConstructor();
         if ($constructor) {
             foreach ($constructor->getParameters() as $arg) {
-                if (isset($values[$arg->getName()])) {
+                if (isset($values, $values[$arg->getName()])) {
                     $args[] = $values[$arg->getName()];
                 }
                 else if ($arg->isDefaultValueAvailable()) {
@@ -152,13 +157,17 @@ class Container
         return $class->newInstanceArgs($args);
     }
 
-    protected function resolveTransient(string $concrete, object $service): void
+    protected function solveTransient(string $concrete, object $service, ?array $values): void
     {
         if (isset($this->transient[$concrete])) {
             return;
         }
 
         if ($service instanceof Transient) {
+            return;
+        }
+
+        if ($values !== null) {
             return;
         }
 

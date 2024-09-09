@@ -165,7 +165,7 @@ class ContainerTest extends TestCase
         $this->assertNotSame($instance1, $instance2);
     }
 
-    public function testResolveWithValues()
+    public function testResolveInjectsProvidedValues()
     {
         // given
         $container = new Container();
@@ -176,5 +176,22 @@ class ContainerTest extends TestCase
 
         // then
         $this->assertEquals('quxx', $result->qux);
+    }
+
+    public function testResolveReturnsNewInstanceEachTime()
+    {
+        // given
+        $container = new Container();
+        $values1 = ['qux' => 'quxx'];
+        $values2 = ['qux' => 'quxy'];
+
+        // when
+        $result1 = $container->resolve(Bar::class, $values1);
+        $result2 = $container->resolve(Bar::class, $values2);
+
+        // then
+        $this->assertNotSame($result1, $result2); // Ensure different instances
+        $this->assertEquals('quxx', $result1->qux);
+        $this->assertEquals('quxy', $result2->qux);
     }
 }

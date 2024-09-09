@@ -59,6 +59,8 @@ var_dump($foo instanceof Foo); // true
 
 The **Container** class provides the `resolve` method, which allows you to pass specific values directly to a class's constructor when resolving dependencies. This is useful when you want to override or inject certain parameters that are not automatically resolvable by the container.
 
+Unlike the `get` method, which can return shared instances, the `resolve` method always returns a new instance of the class, even if called multiple times. This ensures transient behavior and avoids shared state between instances.
+
 ```php
 use Xtompie\Container\Container;
 
@@ -79,7 +81,7 @@ var_dump($bar instanceof Bar); // true
 var_dump($bar->qux); // 'quxx'
 ```
 
-In this example, the `resolve()` method manually provides the value `'quxx'` for the `qux` parameter, while the container automatically resolves the `Foo` dependency.
+In this example, the `resolve()` method manually provides the value `'quxx'` for the `qux` parameter, while the container automatically resolves the `Foo` dependency. Each call to `resolve` creates a new `Bar` instance.
 
 ### Dependencies
 

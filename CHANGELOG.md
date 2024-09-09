@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0 2024-09-09
+
+- `resolve` method always returns a new instance, ensuring transient behavior and avoiding shared state.
+
 ## 1.2.0 2024-09-09
 
 - Added `resolve` method, allowing manual injection of specific values into class constructors.
