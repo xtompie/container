@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0 2024-09-10
+
+- Added `call` method to allow invoking closures, static methods, and instance methods with automatic dependency injection.
+
 ## 1.3.0 2024-09-09
 
 - `resolve` method always returns a new instance, ensuring transient behavior and avoiding shared state.

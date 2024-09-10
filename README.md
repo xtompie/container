@@ -81,7 +81,7 @@ var_dump($bar instanceof Bar); // true
 var_dump($bar->qux); // 'quxx'
 ```
 
-In this example, the `resolve()` method manually provides the value `'quxx'` for the `qux` parameter, while the container automatically resolves the `Foo` dependency. Each call to `resolve` creates a new `Bar` instance.
+In this example, the `resolve()` method manually provides the value `quxx` for the `qux` parameter, while the container automatically resolves the `Foo` dependency. Each call to `resolve` creates a new `Bar` instance.
 
 ### Dependencies
 
@@ -254,7 +254,96 @@ $fooInterface = $container->get(FooInterface::class);
 var_dump($fooInterface instanceof Foo2); // true
 ```
 
-## Extending
+### Call
+
+**Container** class includes a `call` method that allows you to invoke any callback with automatic dependency injection. This method works for closures (anonymous functions), static class methods, and instance methods. The container automatically resolves and injects the required dependencies into the callback.
+
+**Using a closure (anonymous function):**
+
+```php
+use Xtompie\Container\Container;
+
+class Foo
+{
+    public function method(): string
+    {
+        return 'Foo';
+    }
+}
+
+$container = new Container();
+
+$result = $container->call(function(Foo $foo) {
+    return $foo->method();  // 'Foo'
+});
+
+echo $result; // Foo
+```
+
+In this example, the container automatically resolves the `Foo` dependency and injects it into the closure.
+
+**Using a static class method:**
+
+```php
+use Xtompie\Container\Container;
+
+class Foo
+{
+    public function method(): string
+    {
+        return 'Foo';
+    }
+}
+
+class Call
+{
+    public static function f1(Foo $foo): string
+    {
+        return $foo->method();
+    }
+}
+
+$container = new Container();
+
+$result = $container->call([Call::class, 'f1']);
+
+echo $result; // Foo
+```
+
+For static class methods, the container resolves the dependencies and injects them before invoking the static method.
+
+**Using an instance method:**
+
+```php
+use Xtompie\Container\Container;
+
+class Foo
+{
+    public function method(): string
+    {
+        return 'Foo';
+    }
+}
+
+class Call
+{
+    public function f2(Foo $foo): string
+    {
+        return $foo->method();
+    }
+}
+
+$container = new Container();
+$call = new Call();
+
+$result = $container->call([$call, 'f2']);
+
+echo $result; // Foo
+```
+
+Here, the container injects the `Foo` dependency into the instance method and then invokes the method on the provided object.
+
+### Extending
 
 You can extend the **Container** class to add custom functionality or specific behavior for your application.
 

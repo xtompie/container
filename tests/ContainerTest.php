@@ -4,6 +4,19 @@ use PHPUnit\Framework\TestCase;
 use Xtompie\Container\Container;
 use Xtompie\Container\Provider;
 
+class Call
+{
+    public static function f1(Foo $foo): string
+    {
+        return $foo->method();
+    }
+
+    public function f2(Foo $foo): string
+    {
+        return $foo->method();
+    }
+}
+
 class Foo
 {
     public function method(): string
@@ -193,5 +206,44 @@ class ContainerTest extends TestCase
         $this->assertNotSame($result1, $result2); // Ensure different instances
         $this->assertEquals('quxx', $result1->qux);
         $this->assertEquals('quxy', $result2->qux);
+    }
+
+    public function testCallWithClosure()
+    {
+        // given
+        $container = new Container();
+
+        // when
+        $result = $container->call(function(Foo $foo) {
+            return $foo->method();
+        });
+
+        // then
+        $this->assertEquals('Foo', $result);
+    }
+
+    public function testCallWithStaticClassMethod()
+    {
+        // given
+        $container = new Container();
+
+        // when
+        $result = $container->call([Call::class, 'f1']);
+
+        // then
+        $this->assertEquals('Foo', $result);
+    }
+
+    public function testCallWithObjectMethod()
+    {
+        // given
+        $container = new Container();
+        $call = new Call();
+
+        // when
+        $result = $container->call([$call, 'f2']);
+
+        // then
+        $this->assertEquals('Foo', $result);
     }
 }
