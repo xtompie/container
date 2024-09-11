@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0 2024-09-11
+
+- The provider is now executed for concrete classes, previously it was for abstract classes.
+
 ## 1.4.0 2024-09-10
 
 - Added `call` method to allow invoking closures, static methods, and instance methods with automatic dependency injection.

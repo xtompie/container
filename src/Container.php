@@ -47,21 +47,9 @@ class Container
         $this->bindings[$abstract] = $concrete;
     }
 
-    public function bindings(array $bindings): static
-    {
-        $this->bindings = array_merge($this->bindings, $bindings);
-        return $this;
-    }
-
     public function instance(string $abstract, object $instance): void
     {
         $this->instances[$abstract] = $instance;
-    }
-
-    public function instances(array $instances): static
-    {
-        $this->instances = array_merge($this->instances, $instances);
-        return $this;
     }
 
     public function transient(string $abstract): void
@@ -69,21 +57,9 @@ class Container
         $this->transient[$abstract] = true;
     }
 
-    public function transients(array $transients): static
-    {
-        $this->transient = array_merge($this->transient, array_fill_keys($transients, true));
-        return $this;
-    }
-
     public function provider(string $abstract, string $provider): void
     {
         $this->providers[$abstract] = $provider;
-    }
-
-    public function providers(array $providers): static
-    {
-        $this->providers = array_merge($this->providers, $providers);
-        return $this;
     }
 
     public function __invoke(string $abstract): object
@@ -124,7 +100,7 @@ class Container
             return $reflection->invokeArgs($args);
         }
         else {
-            throw new \Exception("Invalid callback type.");
+            throw new Exception("Invalid callback type.");
         }
     }
 
@@ -137,7 +113,7 @@ class Container
             return $service;
         }
 
-        $service = $this->solveProvider($abstract);
+        $service = $this->solveProvider($concrete);
 
         if (!$service) {
             $service = $this->solveReflection($concrete, $values);
