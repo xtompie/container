@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0 2024-09-13
+
+- Remove `callbackArgs`
+
 ## 1.6.0 2024-09-13
 
 - Added `callbackArgs` method to return resolved arguments

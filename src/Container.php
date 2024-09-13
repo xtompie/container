@@ -104,25 +104,6 @@ class Container
         }
     }
 
-    public function callbackArgs(callable|array|string $callback): array
-    {
-        if (is_string($callback)) {
-            $reflection = new ReflectionMethod($callback);
-            return $this->solveArgs($reflection->getParameters(), null);
-        }
-        elseif (is_array($callback)) {
-            $reflection = new ReflectionMethod($callback[0], $callback[1]);
-            return $this->solveArgs($reflection->getParameters(), null);
-        }
-        elseif (is_callable($callback)) {
-            $reflection = new ReflectionFunction($callback);
-            return $this->solveArgs($reflection->getParameters(), null);
-        }
-        else {
-            throw new Exception("Invalid callback type.");
-        }
-    }
-
     protected function solve(string $abstract, ?array $values): mixed
     {
         $concrete = $this->concrete($abstract);
