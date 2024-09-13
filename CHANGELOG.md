@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0 2024-09-13
+
+- Added `callbackArgs` method to return resolved arguments
+
 ## 1.5.0 2024-09-11
 
 - The provider is now executed for concrete classes, previously it was for abstract classes.
