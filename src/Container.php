@@ -67,6 +67,11 @@ class Container
         return $this->solve($abstract, null);
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $abstract
+     * @return T
+     */
     public function get(string $abstract): object
     {
         return $this->solve($abstract, null);
@@ -77,6 +82,11 @@ class Container
         return isset($this->bindings[$abstract]) ? $this->concrete($this->bindings[$abstract]) : $abstract;
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $abstract
+     * @return T
+     */
     public function resolve(string $abstract, array $values): mixed
     {
         return $this->solve($abstract, $values);

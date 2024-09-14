@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.1 2024-09-14
+
+- Added type template annotations (`@template`) and parameter comments to the `get()` and `resolve()` methods.
+
 ## 1.8.0 2024-09-14
 
 - Services can now implement the `Provider` interface to self-provide instances without needing manual provider registration in the container.
