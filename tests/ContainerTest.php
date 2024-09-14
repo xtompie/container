@@ -37,7 +37,6 @@ interface FooInterface {
     public function method(): string;
 }
 
-// Class with dependencies for nested resolution test
 class Bar {
 
     public function __construct(
@@ -55,6 +54,19 @@ class BazProvider implements Provider
     public static function provide(string $abstract, Container $container): object
     {
         return new Baz();
+    }
+}
+
+class Qux implements Provider
+{
+    public static function provide(string $abstract, Container $container): object
+    {
+        return new Qux(val: 42);
+    }
+
+    public function __construct(
+        private int $val,
+    ) {
     }
 }
 
@@ -245,5 +257,30 @@ class ContainerTest extends TestCase
 
         // then
         $this->assertEquals('Foo', $result);
+    }
+
+    public function testShouldResolveClassUsingProviderFromAttribute()
+    {
+        // given
+        $container = new Container();
+
+        // when
+        $result = $container->get(Qux::class);
+
+        // then
+        $this->assertInstanceOf(Qux::class, $result);
+    }
+
+    public function testContainerProviderOverridesProviderFromAttribute()
+    {
+        // given
+        $container = new Container();
+        $container->provider(Qux::class, BazProvider::class);
+
+        // when
+        $result = $container->get(Qux::class);
+
+        // then
+        $this->assertInstanceOf(Baz::class, $result);
     }
 }

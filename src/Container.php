@@ -135,6 +135,11 @@ class Container
         if ($provider && is_subclass_of($provider, Provider::class)) {
             return $provider::provide($abstract, $this);
         }
+
+        if (is_subclass_of($abstract, Provider::class)) {
+            return $abstract::provide($abstract, $this);
+        }
+
         return null;
     }
 

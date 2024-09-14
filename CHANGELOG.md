@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.0 2024-09-14
+
+- Services can now implement the `Provider` interface to self-provide instances without needing manual provider registration in the container.
+
 ## 1.7.0 2024-09-13
 
 - Remove `callbackArgs`

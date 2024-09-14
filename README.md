@@ -239,6 +239,38 @@ var_dump($quux instanceof Baz); // true
 
 This approach allows for more complex or conditional logic when resolving services within the container.
 
+### Self-Providing Services
+
+A service can provide its own provider by implementing the `Provider` interface. This allows a class to automatically supply instances for the container without needing to register the provider in the container.
+
+If a class implements the `Provider` interface, the container will recognize this and automatically use it as a provider when creating instances.
+
+```php
+use Xtompie\Container\Container;
+use Xtompie\Container\Provider;
+
+class Qux implements Provider
+{
+    public static function provide(string $abstract, Container $container): object
+    {
+        return new Qux(val: 42);
+    }
+
+    public function __construct(
+        public int $val,
+    ) {
+    }
+}
+
+$container = new Container();
+$qux = $container->get(Qux::class);
+
+var_dump($qux instanceof Qux); // true
+var_dump($qux->val); // 42
+```
+
+In this example, the `Qux` class implements the `Provider` interface, meaning the container will automatically find the provider within the class and use it to create an instance. This removes the need to manually register the provider in the container.
+
 ### Multi-binding
 
 If you bind multiple classes, the container resolves the most concrete class available. This is useful for managing multiple levels of abstraction or class inheritance.
