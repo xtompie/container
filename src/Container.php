@@ -85,6 +85,7 @@ class Container
     /**
      * @template T of object
      * @param class-string<T> $abstract
+     * @param array<string, mixed> $values
      * @return T
      */
     public function resolve(string $abstract, array $values): mixed
