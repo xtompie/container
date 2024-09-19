@@ -375,6 +375,45 @@ echo $result; // Foo
 
 Here, the container injects the `Foo` dependency into the instance method and then invokes the method on the provided object.
 
+### Call with values
+
+The `Container` class includes a `call` method that allows you to invoke a callable with automatic dependency injection. Additionally, you can pass custom values that override the container's automatic resolution.
+
+```php
+use Xtompie\Container\Container;
+
+class Foo
+{
+    public function method(): string
+    {
+        return 'Foo';
+    }
+}
+
+class Bar
+{
+    public function execute(Foo $foo, string $name): string
+    {
+        return $foo->method() . ' ' . $name;
+    }
+}
+
+$container = new Container();
+$customValues = [
+    'name' => 'CustomName',
+];
+
+$bar = new Bar();
+$result = $container->call([$bar, 'execute'], $customValues);
+
+echo $result; // Foo CustomName
+```
+
+In this example:
+
+- The `Container` resolves an instance of `Foo`.
+- We pass a custom string value `'CustomName'` for the `$name` parameter, which overrides the need for the container to resolve it.
+
 ### Extending
 
 You can extend the **Container** class to add custom functionality or specific behavior for your application.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.0 2024-09-19
+
+- Extended the `call` method to allow passing custom values (`values`) that override container-resolved dependencies.
+
 ## 1.8.1 2024-09-14
 
 - Added type template annotations (`@template`) and parameter comments to the `get()` and `resolve()` methods.

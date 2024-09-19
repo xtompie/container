@@ -283,4 +283,63 @@ class ContainerTest extends TestCase
         // then
         $this->assertInstanceOf(Baz::class, $result);
     }
+
+    public function testCallWithCustomValues()
+    {
+        // given
+        $container = new Container();
+        $customValues = ['foo' => new Foo2()];
+
+        // when
+        $result = $container->call(function(Foo $foo) {
+            return $foo->method();
+        }, $customValues);
+
+        // then
+        $this->assertEquals('Foo2', $result);
+    }
+
+    public function testCallWithStaticClassMethodAndCustomValues()
+    {
+        // given
+        $container = new Container();
+        $customValues = ['foo' => new Foo2()];
+
+        // when
+        $result = $container->call([Call::class, 'f1'], $customValues);
+
+        // then
+        $this->assertEquals('Foo2', $result);
+    }
+
+    public function testCallWithObjectMethodAndCustomValues()
+    {
+        // given
+        $container = new Container();
+        $call = new Call();
+        $customValues = ['foo' => new Foo2()];
+
+        // when
+        $result = $container->call([$call, 'f2'], $customValues);
+
+        // then
+        $this->assertEquals('Foo2', $result);
+    }
+
+    public function testCallShouldOverrideContainerResolvedValueWithCustomValue()
+    {
+        // given
+        $container = new Container();
+        // Container would normally resolve Foo, but we override it with Foo2
+        $customValues = ['foo' => new Foo2()];
+
+        // when
+        $result = $container->call(function(Foo $foo) {
+            return $foo->method();
+        }, $customValues);
+
+        // then
+        // Foo2 should take precedence over the Container-resolved Foo
+        $this->assertEquals('Foo2', $result);
+    }
 }

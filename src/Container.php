@@ -93,21 +93,21 @@ class Container
         return $this->solve($abstract, $values);
     }
 
-    public function call(callable|array|string $callback): mixed
+    public function call(callable|array|string $callback, array $values = []): mixed
     {
         if (is_string($callback)) {
             $reflection = new ReflectionMethod($callback);
-            $args = $this->solveArgs($reflection->getParameters(), null);
+            $args = $this->solveArgs($reflection->getParameters(), $values);
             return $reflection->invokeArgs(null, $args);
         }
         elseif (is_array($callback)) {
             $reflection = new ReflectionMethod($callback[0], $callback[1]);
-            $args = $this->solveArgs($reflection->getParameters(), null);
+            $args = $this->solveArgs($reflection->getParameters(), $values);
             return $reflection->invokeArgs(is_object($callback[0]) ? $callback[0] : null, $args);
         }
         elseif (is_callable($callback)) {
             $reflection = new ReflectionFunction($callback);
-            $args = $this->solveArgs($reflection->getParameters(), null);
+            $args = $this->solveArgs($reflection->getParameters(), $values);
             return $reflection->invokeArgs($args);
         }
         else {
