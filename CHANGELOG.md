@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0 2024-09-19
+
+- Add callArgs to resolve callable args.
+
 ## 1.9.0 2024-09-19
 
 - Extended the `call` method to allow passing custom values (`values`) that override container-resolved dependencies.
