@@ -115,7 +115,7 @@ class Container
         }
     }
 
-    public function callArgs(callable|array|string $callback, array $values = []): mixed
+    public function callArgs(callable|array|string $callback, array $values = []): array
     {
         if (is_string($callback)) {
             $reflection = new ReflectionMethod($callback);
