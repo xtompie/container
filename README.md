@@ -414,6 +414,69 @@ In this example:
 - The `Container` resolves an instance of `Foo`.
 - We pass a custom string value `'CustomName'` for the `$name` parameter, which overrides the need for the container to resolve it.
 
+### callArgs
+
+The `callArgs` method allows you to retrieve the arguments needed to call a given callable (function, method, etc.) with automatic dependency resolution. It inspects the callable’s parameters and resolves the necessary dependencies, optionally allowing custom values or a resolver to be used.
+
+```php
+use Xtompie\Container\Container;
+
+class Foo
+{
+    public function method(): string
+    {
+        return 'Foo';
+    }
+}
+
+$container = new Container();
+$args = $container->callArgs(function(Foo $foo) {
+    return $foo->method();
+});
+
+var_dump($args); // Array with resolved arguments, e.g., [Foo instance]
+```
+
+Custom Values
+
+You can pass custom values to `callArgs` that override the container's default resolution behavior.
+
+```php
+$customValues = ['foo' => new Foo2()];
+$args = $container->callArgs(function(Foo $foo) {
+    return $foo->method();
+}, $customValues);
+
+var_dump($args); // Custom values take precedence over container resolution
+```
+
+Custom Argument Resolver (`$arg`)
+
+The `callArgs` method also accepts an optional `$arg` callable that resolves parameters before falling back to container resolution or custom values. If the `$arg` callable returns `null`, the resolution falls back to the container or the custom values.
+
+```php
+$customResolver = function (string $abstract, string $variableName) {
+    if ($abstract === Foo::class) {
+        return new Foo2();
+    }
+    return null;
+};
+
+$args = $container->callArgs(function(Foo $foo) {
+    return $foo->method();
+}, [], $customResolver);
+
+var_dump($args[0] instanceof Foo2); // true
+```
+
+In this case, the custom resolver takes precedence. If the resolver does not handle the argument (returns `null`), the container or provided custom values are used as fallback.
+
+Key Points
+
+- The `$arg` resolver has the highest priority.
+- Custom values are checked next.
+- If no match is found, the container will resolve dependencies automatically.
+
 ### Extending
 
 You can extend the **Container** class to add custom functionality or specific behavior for your application.

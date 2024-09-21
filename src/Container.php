@@ -93,44 +93,38 @@ class Container
         return $this->solve($abstract, $values);
     }
 
-    public function call(callable|array|string $callback, array $values = []): mixed
+    public function call(callable|array|string $callback, array $values = [], ?callable $arg = null): mixed
     {
         if (is_string($callback)) {
             $reflection = new ReflectionMethod($callback);
-            $args = $this->solveArgs($reflection->getParameters(), $values);
+            $args = $this->solveArgs($reflection->getParameters(), $values, $arg);
             return $reflection->invokeArgs(null, $args);
-        }
-        elseif (is_array($callback)) {
+        } elseif (is_array($callback)) {
             $reflection = new ReflectionMethod($callback[0], $callback[1]);
-            $args = $this->solveArgs($reflection->getParameters(), $values);
+            $args = $this->solveArgs($reflection->getParameters(), $values, $arg);
             return $reflection->invokeArgs(is_object($callback[0]) ? $callback[0] : null, $args);
-        }
-        elseif (is_callable($callback)) {
+        } elseif (is_callable($callback)) {
             $reflection = new ReflectionFunction($callback);
-            $args = $this->solveArgs($reflection->getParameters(), $values);
+            $args = $this->solveArgs($reflection->getParameters(), $values, $arg);
             return $reflection->invokeArgs($args);
-        }
-        else {
+        } else {
             throw new Exception("Invalid callback type.");
         }
     }
 
-    public function callArgs(callable|array|string $callback, array $values = []): array
+    public function callArgs(callable|array|string $callback, array $values = [], ?callable $arg = null): array
     {
         if (is_string($callback)) {
             $reflection = new ReflectionMethod($callback);
-        }
-        elseif (is_array($callback)) {
+        } elseif (is_array($callback)) {
             $reflection = new ReflectionMethod($callback[0], $callback[1]);
-        }
-        elseif (is_callable($callback)) {
+        } elseif (is_callable($callback)) {
             $reflection = new ReflectionFunction($callback);
-        }
-        else {
+        } else {
             throw new Exception("Invalid callback type.");
         }
 
-        return $this->solveArgs($reflection->getParameters(), $values);
+        return $this->solveArgs($reflection->getParameters(), $values, $arg);
     }
 
     protected function solve(string $abstract, ?array $values): mixed
@@ -188,20 +182,30 @@ class Container
      * @param array|null $values
      * @return array
      */
-    protected function solveArgs(array $parameters, ?array $values): array
+    protected function solveArgs(array $parameters, ?array $values, ?callable $arg = null): array
     {
         $args = [];
-        foreach ($parameters as $arg) {
-            if (isset($values, $values[$arg->getName()])) {
-                $args[] = $values[$arg->getName()];
+        foreach ($parameters as $parameter) {
+            $abstract = $parameter->getType()?->getName();
+            $name = $parameter->getName();
+
+            if ($arg) {
+                $resolved = $arg($abstract, $name);
+                if ($resolved !== null) {
+                    $args[$name] = $resolved;
+                    continue;
+                }
             }
-            else if ($arg->isDefaultValueAvailable()) {
-                $args[] = $arg->getDefaultValue();
-            }
-            else {
-                $args[] = $this->get($arg->getType()->getName());
+
+            if (isset($values[$name])) {
+                $args[$name] = $values[$name];
+            } elseif ($parameter->isDefaultValueAvailable()) {
+                $args[$name] = $parameter->getDefaultValue();
+            } else {
+                $args[$name] = $this->get($abstract);
             }
         }
+
         return $args;
     }
 

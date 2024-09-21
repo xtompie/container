@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.0 2024-09-22
+
+- Added optional `$arg` argument to `call` and `callArgs` to allow custom resolvers for resolving arguments.
+
 ## 1.10.0 2024-09-19
 
 - Add callArgs to resolve callable args.

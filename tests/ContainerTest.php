@@ -342,4 +342,62 @@ class ContainerTest extends TestCase
         // Foo2 should take precedence over the Container-resolved Foo
         $this->assertEquals('Foo2', $result);
     }
+
+    public function testCallArgsWithCustomArgumentResolverReturnsResolvedValue()
+    {
+        // given
+        $container = new Container();
+        $customResolver = function (string $abstract, string $name) {
+            if ($abstract === Foo::class) {
+                return new Foo2();
+            }
+            return null;
+        };
+
+        // when
+        $args = $container->callArgs(function(Foo $foo) {
+            return $foo->method();
+        }, [], $customResolver);
+
+        // then
+        $this->assertEquals('Foo2', $args['foo']->method());
+    }
+
+    public function testCallArgsWithCustomArgumentResolverFallsBackToContainerWhenNull()
+    {
+        // given
+        $container = new Container();
+        $customResolver = function (string $abstract, string $name) {
+            return null;
+        };
+
+        // when
+        $args = $container->callArgs(function(Foo $foo) {
+            return $foo->method();
+        }, [], $customResolver);
+
+        // then
+        $this->assertEquals('Foo', $args['foo']->method());
+    }
+
+    public function testCallArgsWithCustomArgumentResolverOverridesCustomValues()
+    {
+        // given
+        $container = new Container();
+        $customResolver = function (string $abstract, string $name) {
+            if ($abstract === Foo::class) {
+                return new Foo2();
+            }
+            return null;
+        };
+        $customValues = ['foo' => new Foo()];
+
+        // when
+        $args = $container->callArgs(function(Foo $foo) {
+            return $foo->method();
+        }, $customValues, $customResolver);
+
+        // then
+        $this->assertEquals('Foo2', $args['foo']->method());
+    }
 }
