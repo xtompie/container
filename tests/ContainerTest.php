@@ -347,8 +347,8 @@ class ContainerTest extends TestCase
     {
         // given
         $container = new Container();
-        $customResolver = function (string $abstract, string $name) {
-            if ($abstract === Foo::class) {
+        $customResolver = function (ReflectionParameter $parameter) {
+            if ($parameter->getType()?->getName() === Foo::class) {
                 return new Foo2();
             }
             return null;
@@ -367,7 +367,7 @@ class ContainerTest extends TestCase
     {
         // given
         $container = new Container();
-        $customResolver = function (string $abstract, string $name) {
+        $customResolver = function () {
             return null;
         };
 
@@ -384,8 +384,8 @@ class ContainerTest extends TestCase
     {
         // given
         $container = new Container();
-        $customResolver = function (string $abstract, string $name) {
-            if ($abstract === Foo::class) {
+        $customResolver = function (ReflectionParameter $parameter) {
+            if ($parameter->getType()?->getName() === Foo::class) {
                 return new Foo2();
             }
             return null;

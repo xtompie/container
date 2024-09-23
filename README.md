@@ -455,8 +455,8 @@ Custom Argument Resolver (`$arg`)
 The `callArgs` method also accepts an optional `$arg` callable that resolves parameters before falling back to container resolution or custom values. If the `$arg` callable returns `null`, the resolution falls back to the container or the custom values.
 
 ```php
-$customResolver = function (string $abstract, string $variableName) {
-    if ($abstract === Foo::class) {
+$customResolver = function (\ReflectionParameter $parameter) {
+    if ($parameter->getType()?->getName() === Foo::class) {
         return new Foo2();
     }
     return null;

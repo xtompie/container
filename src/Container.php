@@ -180,6 +180,7 @@ class Container
     /**
      * @param array<ReflectionParameter> $parameters
      * @param array|null $values
+     * @param callable(ReflectionParameter):mixed $arg
      * @return array
      */
     protected function solveArgs(array $parameters, ?array $values, ?callable $arg = null): array
@@ -190,7 +191,7 @@ class Container
             $name = $parameter->getName();
 
             if ($arg) {
-                $resolved = $arg($abstract, $name);
+                $resolved = $arg($parameter);
                 if ($resolved !== null) {
                     $args[$name] = $resolved;
                     continue;

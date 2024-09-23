@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.12.0 2024-09-23
+
+- Changed custom argument resolved to `callable(ReflectionParameter):mixed`
+
 ## 1.11.0 2024-09-22
 
 - Added optional `$arg` argument to `call` and `callArgs` to allow custom resolvers for resolving arguments.
