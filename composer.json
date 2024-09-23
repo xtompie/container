@@ -13,10 +13,16 @@
         }
     ],
     "require-dev": {
-        "phpunit/phpunit": "^11.3"
+        "phpunit/phpunit": "^11.3",
+        "phpstan/phpstan": "^1.12",
+        "friendsofphp/php-cs-fixer": "^3.64"
     },
     "scripts": {
-        "test": "vendor/bin/phpunit tests"
+        "check-psr4": "composer dump-autoload --strict-psr --optimize",
+        "test": "vendor/bin/phpunit tests",
+        "php-cs-fixer": "vendor/bin/php-cs-fixer --config=.php-cs-fixer.php fix src",
+        "phpstan": "./vendor/bin/phpstan analyse --memory-limit=2G",
+        "phpstan-clear": "./vendor/bin/phpstan clear-result-cache",
+        "precommit": "composer check-psr4 && composer php-cs-fixer && composer phpstan"
     }
-
 }

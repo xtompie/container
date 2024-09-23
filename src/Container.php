@@ -7,6 +7,7 @@ use Exception;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+use ReflectionNamedType;
 use ReflectionParameter;
 
 /** @phpstan-consistent-constructor */
@@ -36,11 +37,12 @@ class Container
 
     public static function container(): self
     {
-        return static::$container ??= new static;
+        return static::$container ??= new static();
     }
 
-    public function __construct(
-    ) {}
+    public function __construct()
+    {
+    }
 
     public function setContainer(self $container): void
     {
@@ -87,7 +89,7 @@ class Container
      * @param class-string<T> $abstract
      * @return T
      */
-    public function __invoke(string $abstract): object
+    public function __invoke(string $abstract)
     {
         return $this->solve($abstract, null);
     }
@@ -97,7 +99,7 @@ class Container
      * @param class-string<T> $abstract
      * @return T
      */
-    public function get(string $abstract): object
+    public function get(string $abstract)
     {
         return $this->solve($abstract, null);
     }
@@ -117,7 +119,7 @@ class Container
      * @param array<string, mixed> $values
      * @return T
      */
-    public function resolve(string $abstract, array $values): mixed
+    public function resolve(string $abstract, array $values)
     {
         return $this->solve($abstract, $values);
     }
@@ -143,7 +145,7 @@ class Container
             $args = $this->solveArgs($reflection->getParameters(), $values, $arg);
             return $reflection->invokeArgs($args);
         } else {
-            throw new Exception("Invalid callback type.");
+            throw new Exception('Invalid callback type.');
         }
     }
 
@@ -162,7 +164,7 @@ class Container
         } elseif (is_callable($callback)) {
             $reflection = new ReflectionFunction($callback);
         } else {
-            throw new Exception("Invalid callback type.");
+            throw new Exception('Invalid callback type.');
         }
 
         return $this->solveArgs($reflection->getParameters(), $values, $arg);
@@ -171,15 +173,16 @@ class Container
     /**
      * @template T of object
      * @param class-string<T> $abstract
-     * @param array<string, mixed> $values
+     * @param array<string, mixed>|null $values
      * @return T
      */
-    protected function solve(string $abstract, ?array $values): object
+    protected function solve(string $abstract, ?array $values)
     {
         $concrete = $this->concrete($abstract);
 
         $service = $this->solveInstance($concrete);
         if ($service) {
+            /** @var T $service */
             return $service;
         }
 
@@ -191,6 +194,7 @@ class Container
 
         $this->solveTransient($concrete, $service, $values);
 
+        /** @var T $service */
         return $service;
     }
 
@@ -199,9 +203,11 @@ class Container
      * @param class-string<T> $concrete
      * @return ?T
      */
-    protected function solveInstance(string $concrete): ?object
+    protected function solveInstance(string $concrete)
     {
-        return $this->instances[$concrete] ?? null;
+        /** @var T|null $instance */
+        $instance = $this->instances[$concrete] ?? null;
+        return $instance;
     }
 
     /**
@@ -209,14 +215,16 @@ class Container
      * @param class-string<T> $abstract
      * @return ?T
      */
-    protected function solveProvider(string $abstract): ?object
+    protected function solveProvider(string $abstract)
     {
         $provider = $this->providers[$abstract] ?? null;
         if ($provider && is_subclass_of($provider, Provider::class)) {
+            /** @var T */
             return $provider::provide($abstract, $this);
         }
 
         if (is_subclass_of($abstract, Provider::class)) {
+            /** @var T */
             return $abstract::provide($abstract, $this);
         }
 
@@ -226,10 +234,10 @@ class Container
     /**
      * @template T of object
      * @param class-string<T> $concrete
-     * @param array<string, mixed> $values
+     * @param array<string, mixed>|null $values
      * @return T
      */
-    protected function solveReflection(string $concrete, ?array $values): object
+    protected function solveReflection(string $concrete, ?array $values)
     {
         $class = new ReflectionClass($concrete);
         $args = [];
@@ -237,20 +245,25 @@ class Container
         if ($constructor) {
             $args = $this->solveArgs($constructor->getParameters(), $values);
         }
+        /** @var T */
         return $class->newInstanceArgs($args);
     }
 
     /**
      * @param array<ReflectionParameter> $parameters
-     * @param array|null $values
-     * @param callable(ReflectionParameter):mixed $arg
-     * @return array
+     * @param array<string, mixed>|null $values
+     * @param callable(ReflectionParameter):mixed|null $arg
+     * @return array<string, mixed>
      */
     protected function solveArgs(array $parameters, ?array $values, ?callable $arg = null): array
     {
         $args = [];
         foreach ($parameters as $parameter) {
-            $abstract = $parameter->getType()?->getName();
+            $type = $parameter->getType();
+            $abstract = null;
+            if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
+                $abstract = $type->getName();
+            }
             $name = $parameter->getName();
 
             if ($arg) {
@@ -261,12 +274,16 @@ class Container
                 }
             }
 
-            if (isset($values[$name])) {
+            if ($values !== null && array_key_exists($name, $values)) {
                 $args[$name] = $values[$name];
             } elseif ($parameter->isDefaultValueAvailable()) {
                 $args[$name] = $parameter->getDefaultValue();
+            } elseif ($abstract !== null) {
+                /** @var class-string */
+                $className = $abstract;
+                $args[$name] = $this->get($className);
             } else {
-                $args[$name] = $this->get($abstract);
+                throw new Exception("Cannot resolve parameter '$name'");
             }
         }
 

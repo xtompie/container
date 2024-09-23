@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.13.0 2024-09-23
+
+- phpstan, cs fix
+
 ## 1.12.0 2024-09-23
 
 - Changed custom argument resolved to `callable(ReflectionParameter):mixed`
