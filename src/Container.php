@@ -2,15 +2,17 @@
 
 namespace Xtompie\Container;
 
+use Closure;
 use Exception;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
 
+/** @phpstan-consistent-constructor */
 class Container
 {
-    protected static $container;
+    protected static Container $container;
 
     /**
      * @var array<class-string, class-string>
@@ -18,7 +20,7 @@ class Container
     protected array $bindings = [];
 
     /**
-     * @var array<string>
+     * @var array<class-string, bool>
      */
     protected array $transient = [];
 
@@ -37,31 +39,54 @@ class Container
         return static::$container ??= new static;
     }
 
+    public function __construct(
+    ) {}
+
     public function setContainer(self $container): void
     {
         static::$container = $container;
     }
 
+    /**
+     * @param class-string $abstract
+     * @param class-string $concrete
+     */
     public function bind(string $abstract, string $concrete): void
     {
         $this->bindings[$abstract] = $concrete;
     }
 
-    public function instance(string $abstract, object $instance): void
+    /**
+     * @param class-string $concrete
+     * @param object $instance
+     */
+    public function instance(string $concrete, object $instance): void
     {
-        $this->instances[$abstract] = $instance;
+        $this->instances[$concrete] = $instance;
     }
 
-    public function transient(string $abstract): void
+    /**
+     * @param class-string $concrete
+     */
+    public function transient(string $concrete): void
     {
-        $this->transient[$abstract] = true;
+        $this->transient[$concrete] = true;
     }
 
+    /**
+     * @param class-string $abstract
+     * @param class-string $provider
+     */
     public function provider(string $abstract, string $provider): void
     {
         $this->providers[$abstract] = $provider;
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $abstract
+     * @return T
+     */
     public function __invoke(string $abstract): object
     {
         return $this->solve($abstract, null);
@@ -77,6 +102,10 @@ class Container
         return $this->solve($abstract, null);
     }
 
+    /**
+     * @param class-string $abstract
+     * @return class-string
+     */
     public function concrete(string $abstract): string
     {
         return isset($this->bindings[$abstract]) ? $this->concrete($this->bindings[$abstract]) : $abstract;
@@ -93,7 +122,13 @@ class Container
         return $this->solve($abstract, $values);
     }
 
-    public function call(callable|array|string $callback, array $values = [], ?callable $arg = null): mixed
+    /**
+     * @param Closure|array{0: object|string, 1: string}|string $callback
+     * @param array<string, mixed> $values
+     * @param Closure|null $arg
+     * @return mixed
+     */
+    public function call(Closure|array|string $callback, array $values = [], ?Closure $arg = null): mixed
     {
         if (is_string($callback)) {
             $reflection = new ReflectionMethod($callback);
@@ -112,7 +147,13 @@ class Container
         }
     }
 
-    public function callArgs(callable|array|string $callback, array $values = [], ?callable $arg = null): array
+    /**
+     * @param Closure|array{0: object|string, 1: string}|string $callback
+     * @param array<string, mixed> $values
+     * @param Closure|null $arg
+     * @return array<string, mixed>
+     */
+    public function callArgs(Closure|array|string $callback, array $values = [], ?Closure $arg = null): array
     {
         if (is_string($callback)) {
             $reflection = new ReflectionMethod($callback);
@@ -127,7 +168,13 @@ class Container
         return $this->solveArgs($reflection->getParameters(), $values, $arg);
     }
 
-    protected function solve(string $abstract, ?array $values): mixed
+    /**
+     * @template T of object
+     * @param class-string<T> $abstract
+     * @param array<string, mixed> $values
+     * @return T
+     */
+    protected function solve(string $abstract, ?array $values): object
     {
         $concrete = $this->concrete($abstract);
 
@@ -147,11 +194,21 @@ class Container
         return $service;
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $concrete
+     * @return ?T
+     */
     protected function solveInstance(string $concrete): ?object
     {
         return $this->instances[$concrete] ?? null;
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $abstract
+     * @return ?T
+     */
     protected function solveProvider(string $abstract): ?object
     {
         $provider = $this->providers[$abstract] ?? null;
@@ -166,6 +223,12 @@ class Container
         return null;
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $concrete
+     * @param array<string, mixed> $values
+     * @return T
+     */
     protected function solveReflection(string $concrete, ?array $values): object
     {
         $class = new ReflectionClass($concrete);
@@ -210,6 +273,11 @@ class Container
         return $args;
     }
 
+    /**
+     * @param class-string $concrete
+     * @param object $service
+     * @param array<string, mixed>|null $values
+     */
     protected function solveTransient(string $concrete, object $service, ?array $values): void
     {
         if (isset($this->transient[$concrete])) {
