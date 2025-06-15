@@ -23,6 +23,10 @@
         "php-cs-fixer": "vendor/bin/php-cs-fixer --config=.php-cs-fixer.php fix src",
         "phpstan": "./vendor/bin/phpstan analyse --memory-limit=2G",
         "phpstan-clear": "./vendor/bin/phpstan clear-result-cache",
-        "precommit": "composer check-psr4 && composer php-cs-fixer && composer phpstan"
+        "precommit": [
+            "composer check-psr4",
+            "composer php-cs-fixer",
+            "composer phpstan"
+        ]
     }
 }
